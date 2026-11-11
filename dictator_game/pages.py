@@ -7,37 +7,36 @@ import settings
 
    
 class SupervisedLearning(Page):
-    form_model = 'player'  # ✅ Required for form submission
+    form_model = 'player'
     form_fields = []
 
 
     def is_displayed(self):
         """ Ensure GoalOriented runs for each round in the part """
         current_part = Constants.get_part(self.round_number)
-        display_round = (self.round_number - 1) % Constants.rounds_per_part + 1  # ✅ Get round within part
+        display_round = (self.round_number - 1) % Constants.rounds_per_part + 1
 
-        # ✅ Show Supervised Page for each round in Part 2 or Part 3 (if delegation is chosen)
         return (current_part == 2 or (current_part == 3 and self.player.delegate_decision_optional)) and (display_round -1) % Constants.rounds_per_part ==0
     
     def vars_for_template(self):
         current_part = Constants.get_part(self.round_number)
       
 
-        supervised_dataset=self.generate_datasets() #generated only once for each player|| doesnot regenerated upon refresh page
+        supervised_dataset=self.generate_datasets()
         json_serializable_dataset = {key: value.tolist() for key, value in supervised_dataset.items()}
 
         mean=settings.mean
         formatted_datasets = []
 
-        for i in range(0,5):  # 5 datasets
+        for i in range(0,5):
             formatted_datasets.append({
             "dataset_num": i,
             "mean_value": mean[i],
             "allocations": [
                 {
                     "round_num": round_num,
-                    "allocate": value,  # Keep original value
-                    "kept": 100 - value  # New variable (100 - allocation)
+                    "allocate": value,
+                    "kept": 100 - value
                 } 
                 for round_num, value in enumerate(supervised_dataset[i], start=1)
             ]
@@ -72,7 +71,7 @@ class SupervisedLearning(Page):
         dataset_history = json.loads(self.player.supervised_dataset)
         print('Dataset History:',dataset_history)
 
-        last_key = list(dataset_history.keys())[-1]  # Get the last key
+        last_key = list(dataset_history.keys())[-1]
         last_sv_message = dataset_history[last_key] 
        
         if last_sv_message != None:
@@ -84,22 +83,19 @@ class SupervisedLearning(Page):
 
     def save_allocations_to_future_rounds(self, final_goal_response):
     
-        allocation_values = list(map(int, final_goal_response.split(',')))  # ✅ Split  response into list
+        allocation_values = list(map(int, final_goal_response.split(',')))
         print('Last Allocation type: ',type(allocation_values))
         try:
-            # ✅ Ensure we have exactly 10 allocations (Rounds 10 to 20)
             if len(allocation_values) < 10:
                 print("⚠️ Live method did not return 10 allocations, skipping storage.")
                 return
 
             round_number=self.round_number
             print('Ongoing Round: ',round_number)
-            for i in range(1,11):  # ✅ Loop for 10 rounds (rounds 10-20)
-                # ✅ Fetch player object for the future round
+            for i in range(1,11):
                 future_player = self.player.in_round(round_number)
                 self.round_number=round_number
 
-                # ✅ Store allocation in the correct round
                 future_player.allocation = allocation_values[i-1]
                 print(f"✅ Saved allocation {future_player.allocation} for Round {round_number}")
                 round_number = round_number + 1
@@ -118,17 +114,17 @@ class SupervisedLearning(Page):
             allocations_str = ','.join(map(str, allocations))
             
             
-            if  self.field_maybe_none('supervised_dataset') is None:  # If it's empty, initialize it
+            if  self.field_maybe_none('supervised_dataset') is None:
                 history = {}
                 print('In blank')
             else:
-                history = json.loads(self.field_maybe_none('supervised_dataset'))  # Convert from string to dict
+                history = json.loads(self.field_maybe_none('supervised_dataset'))
             
-            history[self.sample_cnt] = allocations_str  # Store values using sample_cnt as key
+            history[self.sample_cnt] = allocations_str
             
             
-            self.supervised_dataset= json.dumps(history)  # Convert back to string for storage
-            self.sample_cnt += 1  # Increment counter
+            self.supervised_dataset= json.dumps(history)
+            self.sample_cnt += 1
 
             print(f'Generated Dataset History: {self.supervised_dataset}')
             print('Sending back the msg to HTML:', allocations_str)
@@ -138,13 +134,13 @@ class InformedConsent(Page):
     form_model = 'player'
     form_fields = ['prolific_id']
     def is_displayed(self):
-        return self.round_number == 1  # Show only once at the beginning
+        return self.round_number == 1
 
 
 class Introduction(Page):
     def is_displayed(self):
         print('Using pages.py')
-        return self.round_number == 1  # Show only once at the beginning
+        return self.round_number == 1
 
 
 class ComprehensionTest(Page):
@@ -190,9 +186,6 @@ class FailedTest(Page):
         return self.player.is_excluded
 
 
-# -------------------------
-#  Per-Part Instructions
-# -------------------------
 
 class Instructions(Page):
     def is_displayed(self):
@@ -209,12 +202,7 @@ class Instructions(Page):
         }
 
 
-# -------------------------
-#  Agent Programming
-# -------------------------
 
-#  Decision Making
-# -------------------------
 
 class Decision(Page):
     form_model = 'player'
@@ -224,8 +212,6 @@ class Decision(Page):
 
     def is_displayed(self):
         current_part = Constants.get_part(self.round_number)
-        # Show Decision page only if not in Part 2 and not using optional delegation in Part 3
-        #return not (current_part == 2 or (current_part == 3 and self.player.delegate_decision_optional))
         return not (current_part == 2 or (current_part == 3 and self.player.delegate_decision_optional))
     
 
@@ -258,61 +244,47 @@ class Decision(Page):
         import random
 
 
-        #decisions = json.loads(self.player.random_decisions)
-        #print(f"[DEBUG] Existing random_decisions: {decisions}")
 
-        # Get current part and display round
         current_part = Constants.get_part(self.round_number)
         display_round = (self.round_number - 1) % Constants.rounds_per_part + 1
 
-        if current_part == 1 or (current_part == 3 and not self.player.delegate_decision_optional)  :  # Part 1 logic or Part 3 with manual with manual decisions and timer
+        if current_part == 1 or (current_part == 3 and not self.player.delegate_decision_optional)  :
   
                 self.participant.vars['alert_message'] = None
                 self.player.random_decisions = False
                 self.player.delegate_decision_optional = False 
 
-            # Update decisions for the current round
 
 
 
-        elif current_part == 2:  # Mandatory delegation
+        elif current_part == 2:
             self.player.allocation = self.player.get_agent_decision_mandatory(display_round)
             self.participant.vars['alert_message'] = ""
             self.player.random_decisions = True
             self.player.delegate_decision_optional = False 
 
-        elif current_part == 3 and self.player.delegate_decision_optional:  # Optional delegation
+        elif current_part == 3 and self.player.delegate_decision_optional:
             self.player.allocation = self.player.get_agent_decision_optional(display_round)
             self.participant.vars['alert_message'] = ""
             self.player.random_decisions = False
             self.player.delegate_decision_optional = True
 
-        # elif current_part == 3 and not self.player.delegate_decision_optional:  # Manual decision
 
-        #     #self.player.allocation = self.player.get_agent_decision_optional(display_round)
-        #     self.player.random_decisions = False
-        #     self.player.delegate_decision_optional = False
-        #     self.player.allocation = self.player.get_agent_decision_optional(display_round)
 
 
 
         print(f"round:{self.round_number}  self.player.allocation: {self.player.allocation}")
 
-# -------------------------
-#  Delegation Decision
-# -------------------------
 
 class DelegationDecision(Page):
     form_model = 'player'
     form_fields = ['delegate_decision_optional']
 
     def is_displayed(self):
-        # Show only at the start of Part 3
 
         return Constants.get_part(self.round_number) == 3 and (self.round_number - 1) % Constants.rounds_per_part == 0
 
     def before_next_page(self):
-        # Save the decision for all rounds in Part 3
         if Constants.get_part(self.round_number) == 3:
             part_rounds = self.player.in_rounds(
                 (Constants.get_part(self.round_number) - 1) * Constants.rounds_per_part + 1,
@@ -323,9 +295,6 @@ class DelegationDecision(Page):
 
 
 
-# -------------------------
-#  Results
-# -------------------------
 
 class Results(Page):
     def is_displayed(self):
@@ -339,7 +308,6 @@ class Results(Page):
             is_delegation=False
         else: 
             is_delegation=  self.player.field_maybe_none('delegate_decision_optional')
-        #decisions = json.loads(self.player.random_decisions)
 
         player  = self.player
         rounds_data = []
@@ -349,7 +317,7 @@ class Results(Page):
                 current_part     * Constants.rounds_per_part + 1
         ):
             rr         = player.in_round(r)
-            allocation = rr.field_maybe_none('allocation') or 0   # 0 if None
+            allocation = rr.field_maybe_none('allocation') or 0
             rounds_data.append({
                 'round'     : r - (current_part - 1) * Constants.rounds_per_part,
                 'kept'      : 100 - allocation,
@@ -364,9 +332,6 @@ class Results(Page):
         )
 
 
-# -------------------------
-#  Debriefing
-# -------------------------
 class Debriefing(Page):
     def is_displayed(self):
         return  self.round_number == Constants.num_rounds
@@ -382,7 +347,6 @@ class Debriefing(Page):
         round_number=self.round_number
         random_payoff_part=random.randint(1,3)
 
-        # Loop through parts (1, 2, 3)
         for part in range(1, 4):
             part_data = []
             for round_number in range(
@@ -405,7 +369,6 @@ class Debriefing(Page):
         }
 
 
-        # Check if agent allocation was chosen in part 3
         agent_allocation_chosen = self.player.field_maybe_none('delegate_decision_optional')
         if self.player.field_maybe_none('random_payoff_part') == None: 
             random_payoff_part=self.random_payoff_selection()
@@ -453,12 +416,12 @@ class Debriefing(Page):
 class ExitQuestionnaire(Page):
     form_model = 'player'
     form_fields = [
-        'gender',           # Male / Female / Non-binary / Prefer not to say
-        'age',              # 18 – 100
-        'occupation',       # free text ≤ 100 chars
-        'ai_use',           # frequency scale
-        'task_difficulty',  # difficulty scale
-        'feedback',         # optional free text ≤ 1000 chars
+        'gender',
+        'age',
+        'occupation',
+        'ai_use',
+        'task_difficulty',
+        'feedback',
     ]
 
     def is_displayed(self):
@@ -467,7 +430,6 @@ class ExitQuestionnaire(Page):
 
 class Thankyou(Page):
 
-    # the Prolific completion link
 
     def vars_for_template(self):
         prolific_url = 'https://bsky.app/profile/iterrucha.bsky.social'
@@ -479,22 +441,18 @@ class Thankyou(Page):
 
 
 
-# -------------------------
-#  Page Sequence
-# -------------------------
-#page_sequence=[ChatGPTPage]
 
 page_sequence = [
-    InformedConsent,        # Only at the beginning
-    Introduction,           # Only at the beginning
-    ComprehensionTest,      # Only at the beginning
-    FailedTest,             # If excluded after failing comprehension test
-    Instructions,           # Once at the start of each part
-    DelegationDecision,     # At the start of Part 3 to choose delegation
-    SupervisedLearning,     # ChatGPTPage for Part 2 or optional delegation in Part 3
-    Decision,               # Decision page for Part 1 and manual decisions in Part 3
-    Results,                # Reusable for all parts
-    Debriefing,             # At the end or if excluded
+    InformedConsent,
+    Introduction,
+    ComprehensionTest,
+    FailedTest,
+    Instructions,
+    DelegationDecision,
+    SupervisedLearning,
+    Decision,
+    Results,
+    Debriefing,
     ExitQuestionnaire,
     Thankyou,
 ]

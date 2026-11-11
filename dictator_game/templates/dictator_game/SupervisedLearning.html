@@ -2,7 +2,7 @@
 {% block content %}
 
 <div class="main-container">
-    <!-- Left Side: Dataset Tables -->
+    
     <div class="dataset-container">
     <h1 class="main-title">
         Part {{ current_part }}: Set up your AI agent
@@ -34,10 +34,10 @@
             {% endfor %}
         </div>
 
-        <!-- Generate Button Below the Second Row -->
+        
     </div>
 
-    <!-- Right Side: Results Table -->
+    
     <div class="results-container">
         <h3 class="main-title">AI Agent Behavior</h3>
         <table id="allocation-table" class="styled-table">
@@ -72,15 +72,12 @@ let selectedMeanValue = null;
 function selectTable(datasetNum, meanValue) {
     event.preventDefault();
 
-    // Remove highlight from all tables
     document.querySelectorAll('.dataset-table').forEach(table => {
         table.classList.remove('selected-table');
     });
 
-    // Highlight the selected table
     document.getElementById(`dataset_${datasetNum}`).classList.add('selected-table');
 
-    // Store selected dataset
     selectedDatasetNum = datasetNum;
     selectedMeanValue = meanValue;
 }
@@ -103,7 +100,7 @@ function liveRecv(data) {
         if (pattern.test(data.response))
         {
             if (confirmBtn) {
-            confirmBtn.style.display = "block"; // or "block" if you prefer full-width
+            confirmBtn.style.display = "block"; 
                             }
 
         }
@@ -136,7 +133,6 @@ body {
     padding: 0;
 }
 
-/* Make dataset tables & results container side by side */
 .main-container {
     display: flex;
     justify-content: space-between;
@@ -146,7 +142,6 @@ body {
     padding: 20px;
 }
 
-/* Left Side: Dataset Tables */
 .dataset-container {
     flex: 1;
     background: #ffffff;
@@ -156,7 +151,6 @@ body {
     margin-right: 30px
 }
 
-/* Arrange tables in a 3-2 grid */
 .dataset-tables {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -165,20 +159,17 @@ body {
     padding-top: 50px;
 }
 
-/* Move last two tables to the second row */
 .dataset-tables .dataset-box:nth-child(4),
 .dataset-tables .dataset-box:nth-child(5) {
     grid-column: span 1;
     justify-self: center;
 }
 
-/* Ensure tables are small */
 .dataset-box {
     width: 180px;
     text-align: center;
 }
 
-/* Right Side: Results Container */
 .results-container {
     flex: 1;
     max-width: 450px;
@@ -188,7 +179,6 @@ body {
     border-radius: 8px;
 }
 
-/* Table Styling */
 .styled-table {
     border-collapse: collapse;
     width: 100%;
@@ -218,13 +208,11 @@ body {
     background-color: #f1f1f1;
 }
 
-/* Highlight selected table */
 .selected-table {
     border: 3px solid #3f963b !important;
     background-color: #e6f0ff !important;
 }
 
-/* Button Styling */
 .modern-btn {
     display: block;
     width: 100%;
@@ -261,7 +249,6 @@ body {
     background-color: #003d80;
 }
 
-/* Position the Generate button */
 .generate-container {
     grid-column: span 2;
     display: flex;
@@ -280,7 +267,6 @@ body {
         padding-bottom: 10px;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .main-container {
         flex-direction: column;

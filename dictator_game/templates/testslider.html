@@ -44,7 +44,7 @@ function updateSliderValue() {
     document.getElementById("slider-value").textContent = document.getElementById("allocation-slider").value;
 }
 function sendSliderValue() {
-    if (event) event.preventDefault();  // Prevent default form submission
+    if (event) event.preventDefault();  
     let sliderValue = document.getElementById("allocation-slider").value;
     liveSend({'slider_value': sliderValue});
 }
@@ -54,8 +54,8 @@ function liveRecv(data) {
 
     if (data.response) {
         console.log('Updating table')
-        let responseString = String(data.response).trim(); // Ensure it's a string
-        let allocations = responseString.split(',') // Remove extra spaces
+        let responseString = String(data.response).trim(); 
+        let allocations = responseString.split(',') 
         console.log('Allocations:', allocations.values());
 
         if (allocations.length === 10) {
@@ -102,7 +102,6 @@ function liveRecv(data) {
     justify-content: flex-start;
     gap: 20px;
     width: 1200px;
-     /* Added left padding to shift elements left */
 }
 .results-container {
     flex: 1;
@@ -125,7 +124,7 @@ function liveRecv(data) {
     display: flex;
     align-items: center;
     width: 100%;
-    margin-top: 10px; /* Added margin to push input field down */
+    margin-top: 10px; 
 
 
 }
@@ -144,7 +143,7 @@ function liveRecv(data) {
     position: fixed;
     top: 20px;
     right: 20px;
-    background-color: #f44336; /* Bright red background */
+    background-color: #f44336; 
     color: white;
     padding: 15px 20px;
     border-radius: 8px;
